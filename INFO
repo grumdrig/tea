@@ -1,0 +1,17 @@
+NAME: tea
+
+DESCRIPTION: Tiny Encryption Algorithm in Python
+
+CATEGORY: crypto
+
+RELATED: SHA
+
+STATUS: 1.0
+
+LANGUAGE: Python
+
+TAGS: tiny encryption decryption algorithm
+
+MAIN: tea.py
+
+PUBLISH: ssh-push
