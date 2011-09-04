@@ -74,10 +74,11 @@ def decipher(s, key):
 def main():
   """Usage: tea.py [OPTS] [KEY] [INFILE [OUTFILE]]
 OPTS:
-  -d       Decipher (default is to encipher)
-  -h       Ciphertext is expressed in hex format (default for a tty or with -i)
-  -t       Ciphertext is expressed as literal text (default otherwise)
-  -i INPUT Input specified is used instead of INFILE or stdin
+  -d         Decipher (default is to encipher)
+  -h         Ciphertext is expressed in hex format (default for tty or with -i)
+  -t         Ciphertext is expressed as literal text (default otherwise)
+  -i INPUT   Input specified is used instead of INFILE or stdin
+  -P PROMPT  Specify text prompt for password request (e.g., a hint)
 KEY:
   -k KEY      A hexadecimal key string of length exactly 16
   -p PASSWORD Password is used to generate an md5 hash, which is used as key
@@ -98,8 +99,9 @@ If either FILE argument is omitted, stdin/stdout is used."""
   key = None
   password = None
   message = None
+  prompt = "Password: "
   import sys, getopt
-  opts,args = getopt.getopt(sys.argv[1:], "dhi:p:tk:")
+  opts,args = getopt.getopt(sys.argv[1:], "dhi:p:P:tk:")
   for o,a in opts:
     if o == '-d':
       cipher = decipher
@@ -115,6 +117,8 @@ If either FILE argument is omitted, stdin/stdout is used."""
       key = open(a, 'rb').read()
     elif o == '-i':
       message = a
+    elif o == '-P':
+      prompt = a
     else:
       usage()
       if (len(args) < 1) or (len(args[0]) != 16):
@@ -123,7 +127,7 @@ If either FILE argument is omitted, stdin/stdout is used."""
   if not key:
     import getpass, hashlib
     if not password:
-      password = getpass.getpass("Password:")
+      password = getpass.getpass(prompt)
     key = hashlib.md5(password).digest()[:16]
   if len(key) != 16:
     usage('key length must be 16')
