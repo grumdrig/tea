@@ -75,14 +75,15 @@ def main():
   """Usage: tea.py [OPTS] [KEY] [INFILE [OUTFILE]]
 OPTS:
   -d       Decipher (default is to encipher)
-  -h       Ciphertext is expressed in hex format (default for a tty)
+  -h       Ciphertext is expressed in hex format (default for a tty or with -i)
   -t       Ciphertext is expressed as literal text (default otherwise)
+  -i INPUT Input specified is used instead of INFILE or stdin
 KEY:
   -k KEY      A hexadecimal key string of length exactly 16
   -p PASSWORD Password is used to generate an md5 hash, which is used as key
   -f KEYFILE  A key file of length exactly 16
   If no key, keyfile or password is provided, a password is read from stdin.
-  This requires that INFILE be specified.
+  This requires that INFILE be specified or -i option is used.
 INFILE
   Path to file containing plain or cipher text
 OUTFILE
@@ -96,8 +97,9 @@ If either FILE argument is omitted, stdin/stdout is used."""
   hex = None
   key = None
   password = None
+  message = None
   import sys, getopt
-  opts,args = getopt.getopt(sys.argv[1:], "dhp:tk:")
+  opts,args = getopt.getopt(sys.argv[1:], "dhi:p:tk:")
   for o,a in opts:
     if o == '-d':
       cipher = decipher
@@ -111,11 +113,13 @@ If either FILE argument is omitted, stdin/stdout is used."""
       key = a
     elif o == '-f':
       key = open(a, 'rb').read()
+    elif o == '-i':
+      message = a
     else:
       usage()
       if (len(args) < 1) or (len(args[0]) != 16):
         usage
-  if not (key or password or args): usage()
+  if not (key or password or args or message): usage()
   if not key:
     import getpass, hashlib
     if not password:
@@ -125,12 +129,17 @@ If either FILE argument is omitted, stdin/stdout is used."""
     usage('key length must be 16')
   key = struct.unpack('4I', key)
 
-  input = args and open(args.pop(0), 'rb') or sys.stdin
+  inputisatty = True
+  if not message:
+    input = args and open(args.pop(0), 'rb') or sys.stdin
+    message = input.read()
+    inputisatty = input.isatty()
+    input.close()
+    
   output = args and open(args.pop(0), 'wb') or sys.stdout
 
-  message = input.read()
   if (cipher == decipher) and ((hex == True) or
-                               ((hex == None) and input.isatty())):
+                               ((hex == None) and inputisatty)):
     message = message.decode('hex')
   result = cipher(message, key)
   if (cipher == encipher) and ((hex == True) or
